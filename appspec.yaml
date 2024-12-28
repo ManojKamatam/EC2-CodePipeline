@@ -5,9 +5,6 @@ files:
     destination: /var/www/myapp
 hooks:
   AfterInstall:
-    - location: scripts/install_dependencies.sh
-      timeout: 300
-      runas: root
     - location: scripts/restart_server.sh
       timeout: 300
       runas: root
