@@ -31,24 +31,44 @@ else
     exit 1
 fi
 
-# Set up virtual environment
+# Set up and activate virtual environment
 echo "Setting up virtual environment..." >> "$LOG_FILE"
 python3 -m venv "$APP_DIR/venv"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to create virtual environment." >> "$LOG_FILE"
+    exit 1
+fi
+
 source "$APP_DIR/venv/bin/activate"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to activate virtual environment." >> "$LOG_FILE"
+    exit 1
+fi
 
 # Install dependencies
 REQ_FILE="$APP_DIR/requirements.txt"
 if [ -f "$REQ_FILE" ]; then
     echo "Installing dependencies from $REQ_FILE..." >> "$LOG_FILE"
     pip install -r "$REQ_FILE" >> "$LOG_FILE" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install dependencies from $REQ_FILE." >> "$LOG_FILE"
+        deactivate
+        exit 1
+    fi
 else
-    echo "requirements.txt not found. Installing Flask as fallback..." >> "$LOG_FILE"
+    echo "Error: requirements.txt not found in $APP_DIR. Installing Flask as fallback..." >> "$LOG_FILE"
     pip install flask >> "$LOG_FILE" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install Flask." >> "$LOG_FILE"
+        deactivate
+        exit 1
+    fi
 fi
 
 # Verify Flask installation
-if ! python3 -c "import flask" &> /dev/null; then
-    echo "Error: Flask installation failed." >> "$LOG_FILE"
+python3 -c "import flask" >> "$LOG_FILE" 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: Flask module is not installed." >> "$LOG_FILE"
     deactivate
     exit 1
 fi
