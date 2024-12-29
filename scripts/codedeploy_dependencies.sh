@@ -45,6 +45,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Upgrade pip to the latest version
+echo "Upgrading pip..." >> "$LOG_FILE"
+pip install --upgrade pip >> "$LOG_FILE" 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to upgrade pip." >> "$LOG_FILE"
+    deactivate
+    exit 1
+fi
+
 # Install dependencies
 REQ_FILE="$APP_DIR/requirements.txt"
 if [ -f "$REQ_FILE" ]; then
@@ -57,9 +66,9 @@ if [ -f "$REQ_FILE" ]; then
     fi
 else
     echo "Error: requirements.txt not found in $APP_DIR. Installing Flask as fallback..." >> "$LOG_FILE"
-    pip install flask >> "$LOG_FILE" 2>&1
+    pip install flask gunicorn werkzeug >> "$LOG_FILE" 2>&1
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to install Flask." >> "$LOG_FILE"
+        echo "Error: Failed to install Flask or Gunicorn." >> "$LOG_FILE"
         deactivate
         exit 1
     fi
