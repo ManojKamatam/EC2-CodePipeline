@@ -5,6 +5,9 @@ files:
     destination: /var/www/myapp
 hooks:
   BeforeInstall:
+    - location: scripts/fix_permissions.sh
+      timeout: 300
+      runas: root
     - location: scripts/create_directory.sh
       timeout: 300
       runas: root
