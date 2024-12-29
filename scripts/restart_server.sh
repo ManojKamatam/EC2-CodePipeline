@@ -1,17 +1,18 @@
 #!/bin/bash
 
-# Log the restart process
-echo "Restarting Gunicorn server..." >> /var/log/codedeploy_restart.log
+LOG_FILE="/var/log/codedeploy_restart.log"
+echo "Restarting Gunicorn server..." >> "$LOG_FILE"
 
-# Ensure PYTHONPATH includes the application director
-export PYTHONPATH=/var/www/myapp/package:$PYTHONPATH
-echo "PYTHONPATH set to: $PYTHONPATH" >> /var/log/codedeploy_restart.log
-
-# Restart Gunicorn
+# Restart Gunicorn service
 if systemctl status gunicorn &> /dev/null; then
-  sudo systemctl restart gunicorn >> /var/log/codedeploy_restart.log 2>&1
-  echo "Gunicorn restarted successfully" >> /var/log/codedeploy_restart.log
+  sudo systemctl restart gunicorn >> "$LOG_FILE" 2>&1
+  if [ $? -eq 0 ]; then
+    echo "Gunicorn restarted successfully." >> "$LOG_FILE"
+  else
+    echo "Failed to restart Gunicorn. Check the service logs." >> "$LOG_FILE"
+    exit 1
+  fi
 else
-  echo "Gunicorn service not found or failed to restart." >> /var/log/codedeploy_restart.log
+  echo "Gunicorn service not found. Please check the setup." >> "$LOG_FILE"
   exit 1
 fi
