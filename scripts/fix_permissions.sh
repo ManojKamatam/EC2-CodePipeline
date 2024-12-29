@@ -1,8 +1,14 @@
 #!/bin/bash
-# Ensure the directory exists before applying permissions
-if [ -d "/opt/codedeploy-agent/deployment-root/*/deployment-archive/scripts/" ]; then
-    chmod +x /opt/codedeploy-agent/deployment-root/*/deployment-archive/scripts/*.sh
-else
-    echo "Scripts directory does not exist."
-    exit 1
+
+# Find the correct deployment directory dynamically
+DEPLOY_DIR=$(find /opt/codedeploy-agent/deployment-root/ -name "deployment-archive" -type d | head -n 1)
+
+if [ -z "$DEPLOY_DIR" ]; then
+  echo "Deployment directory not found."
+  exit 1
 fi
+
+echo "Deployment directory found: $DEPLOY_DIR"
+
+# Make all scripts executable
+chmod +x "$DEPLOY_DIR/scripts/"*.sh
