@@ -28,12 +28,11 @@ fi
 echo "Starting Gunicorn service..."
 sudo systemctl restart gunicorn
 
-# Configure and restart Nginx (optional)
-if [ -f "/etc/nginx/sites-available/myapp" ]; then
-    echo "Nginx configuration already exists."
-else
+# Configure and restart Nginx
+NGINX_CONF="/etc/nginx/sites-available/myapp"
+if [ ! -f "$NGINX_CONF" ]; then
     echo "Configuring Nginx..."
-    sudo tee /etc/nginx/sites-available/myapp > /dev/null <<EOL
+    sudo tee $NGINX_CONF > /dev/null <<EOL
 server {
     listen 80;
     server_name your_server_ip_or_domain;
@@ -47,8 +46,15 @@ server {
     }
 }
 EOL
-    sudo ln -s /etc/nginx/sites-available/myapp /etc/nginx/sites-enabled
+    sudo ln -s $NGINX_CONF /etc/nginx/sites-enabled
     sudo nginx -t && sudo systemctl restart nginx
 fi
 
-echo "Deployment completed!"
+# Verify Gunicorn service
+if ! sudo systemctl is-active --quiet gunicorn; then
+    echo "Gunicorn failed to start. Check logs for details."
+    sudo journalctl -u gunicorn
+    exit 1
+fi
+
+echo "Deployment completed successfully!"
