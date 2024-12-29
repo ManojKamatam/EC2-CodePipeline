@@ -15,6 +15,7 @@ phases:
       - zip -r app.zip . -x '*.git*'  # Exclude Git files
 artifacts:
   files:
+    - requirements.txt
     - appspec.yml
     - app.zip
     - scripts/**
