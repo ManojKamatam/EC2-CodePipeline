@@ -11,10 +11,11 @@ hooks:
     - location: scripts/fix_permissions.sh
       timeout: 300
       runas: root
-    - location: scripts/create_directory.sh
+  AfterInstall:
+    - location: scripts/create_gunicorn_service.sh
       timeout: 300
       runas: root
-  AfterInstall:
+  ApplicationStart:
     - location: scripts/restart_server.sh
       timeout: 300
       runas: root
