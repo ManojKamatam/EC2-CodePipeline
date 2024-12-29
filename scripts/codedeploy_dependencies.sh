@@ -19,6 +19,7 @@ APP_ZIP="$DEPLOY_DIR/app.zip"
 if [ ! -d "$APP_DIR" ]; then
     echo "Creating application directory: $APP_DIR" >> "$LOG_FILE"
     sudo mkdir -p "$APP_DIR"
+    sudo chown ec2-user:ec2-user "$APP_DIR"
     sudo chmod 755 "$APP_DIR"
 fi
 
@@ -33,10 +34,12 @@ fi
 
 # Set up and activate virtual environment
 echo "Setting up virtual environment..." >> "$LOG_FILE"
-python3 -m venv "$APP_DIR/venv"
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to create virtual environment." >> "$LOG_FILE"
-    exit 1
+if [ ! -d "$APP_DIR/venv" ]; then
+    python3 -m venv "$APP_DIR/venv" >> "$LOG_FILE" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create virtual environment." >> "$LOG_FILE"
+        exit 1
+    fi
 fi
 
 source "$APP_DIR/venv/bin/activate"
@@ -48,11 +51,6 @@ fi
 # Upgrade pip to the latest version
 echo "Upgrading pip..." >> "$LOG_FILE"
 pip install --upgrade pip >> "$LOG_FILE" 2>&1
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to upgrade pip." >> "$LOG_FILE"
-    deactivate
-    exit 1
-fi
 
 # Install dependencies
 REQ_FILE="$APP_DIR/requirements.txt"
@@ -65,8 +63,8 @@ if [ -f "$REQ_FILE" ]; then
         exit 1
     fi
 else
-    echo "Error: requirements.txt not found in $APP_DIR. Installing Flask as fallback..." >> "$LOG_FILE"
-    pip install flask gunicorn werkzeug >> "$LOG_FILE" 2>&1
+    echo "Error: requirements.txt not found in $APP_DIR. Installing Flask and Gunicorn as fallback..." >> "$LOG_FILE"
+    pip install flask gunicorn >> "$LOG_FILE" 2>&1
     if [ $? -ne 0 ]; then
         echo "Error: Failed to install Flask or Gunicorn." >> "$LOG_FILE"
         deactivate
@@ -78,6 +76,13 @@ fi
 python3 -c "import flask" >> "$LOG_FILE" 2>&1
 if [ $? -ne 0 ]; then
     echo "Error: Flask module is not installed." >> "$LOG_FILE"
+    deactivate
+    exit 1
+fi
+
+# Verify Gunicorn installation
+if [ ! -f "$APP_DIR/venv/bin/gunicorn" ]; then
+    echo "Error: Gunicorn is not installed correctly." >> "$LOG_FILE"
     deactivate
     exit 1
 fi
