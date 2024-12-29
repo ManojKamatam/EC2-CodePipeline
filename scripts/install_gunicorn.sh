@@ -1,20 +1,18 @@
 #!/bin/bash
-
-# Log the installation process
 echo "Installing Gunicorn..." >> /var/log/codedeploy_gunicorn_install.log
 
 # Ensure pip is installed
-if ! command -v pip &> /dev/null; then
-  echo "Installing pip..." >> /var/log/codedeploy_gunicorn_install.log
+if ! command -v pip3 &> /dev/null; then
+  echo "Installing pip3..." >> /var/log/codedeploy_gunicorn_install.log
   sudo yum install -y python3-pip >> /var/log/codedeploy_gunicorn_install.log 2>&1
 fi
 
-# Install Gunicorn using pip
+# Install Gunicorn
 sudo pip3 install gunicorn >> /var/log/codedeploy_gunicorn_install.log 2>&1
 
-# Verify Gunicorn installation
+# Check if Gunicorn is installed
 if ! command -v gunicorn &> /dev/null; then
-  echo "Failed to install Gunicorn." >> /var/log/codedeploy_gunicorn_install.log
+  echo "Gunicorn installation failed." >> /var/log/codedeploy_gunicorn_install.log
   exit 1
 fi
 
