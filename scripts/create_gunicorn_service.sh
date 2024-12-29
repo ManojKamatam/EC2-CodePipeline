@@ -1,4 +1,5 @@
 #!/bin/bash
+
 echo "Setting up Gunicorn service..." >> /var/log/codedeploy_gunicorn_service.log
 
 # Create Gunicorn service file
@@ -12,6 +13,7 @@ User=ec2-user
 Group=ec2-user
 WorkingDirectory=/var/www/myapp
 ExecStart=/usr/local/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 app:app
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 
 [Install]
 WantedBy=multi-user.target
