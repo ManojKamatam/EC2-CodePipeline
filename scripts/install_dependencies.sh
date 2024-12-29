@@ -6,14 +6,14 @@ DEPLOY_ROOT="/opt/codedeploy-agent/deployment-root"
 
 echo "Installing application dependencies..." >> "$LOG_FILE"
 
-# Locate the latest deployment directory dynamically
-DEPLOY_DIR=$(find "$DEPLOY_ROOT" -mindepth 1 -maxdepth 1 -type d | sort -r | head -n 1)
+# Locate the deepest directory containing deployment-archive
+DEPLOY_DIR=$(find "$DEPLOY_ROOT" -type d -name "deployment-archive" | head -n 1)
 if [ -z "$DEPLOY_DIR" ]; then
-    echo "Error: Deployment directory not found." >> "$LOG_FILE"
+    echo "Error: Deployment directory (deployment-archive) not found under $DEPLOY_ROOT." >> "$LOG_FILE"
     exit 1
 fi
 
-APP_ZIP="$DEPLOY_DIR/deployment-archive/app.zip"
+APP_ZIP="$DEPLOY_DIR/app.zip"
 
 # Ensure the application directory exists
 if [ ! -d "$APP_DIR" ]; then
