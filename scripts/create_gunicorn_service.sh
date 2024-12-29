@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "Setting up Gunicorn service..." >> /var/log/codedeploy_gunicorn_service.log
+LOG_FILE="/var/log/codedeploy_gunicorn_service.log"
+echo "Setting up Gunicorn service..." >> "$LOG_FILE"
 
 # Create Gunicorn service file
 sudo tee /etc/systemd/system/gunicorn.service > /dev/null <<EOL
@@ -22,12 +23,12 @@ EOL
 # Reload systemd and start Gunicorn
 sudo systemctl daemon-reload
 sudo systemctl enable gunicorn
-sudo systemctl start gunicorn
+sudo systemctl restart gunicorn
 
 # Check service status
 if systemctl status gunicorn &> /dev/null; then
-  echo "Gunicorn service started successfully." >> /var/log/codedeploy_gunicorn_service.log
+  echo "Gunicorn service started successfully." >> "$LOG_FILE"
 else
-  echo "Gunicorn service failed to start." >> /var/log/codedeploy_gunicorn_service.log
+  echo "Gunicorn service failed to start." >> "$LOG_FILE"
   exit 1
 fi
